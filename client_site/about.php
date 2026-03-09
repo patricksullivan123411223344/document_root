@@ -1,13 +1,12 @@
 <!--
 Name: Patrick Sullivan
-Date: Feb 15, 2026
+Date: March 7, 2026
 File: about.html
 Description: About page containing the layout for an overview 
 of Katherine, her education, and her accomplishments. Also uses
 the Google Maps API to show her office location for ease of finding 
-her office and getting directions. Still needs styling and some minor additions.
+her office and getting directions. 
 -->
-<?php include "partials/nav.php"; ?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -15,10 +14,10 @@ her office and getting directions. Still needs styling and some minor additions.
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Katherine Sullivan LCSW</title>
         <meta name="description" content="This is the about page for Katherine Sullivan LCSW">
-        <link rel="stylesheet" href="/client_site/css/about.css">
+        <link rel="stylesheet" href="css/about.css">
     </head>
     <body>
- 
+
     <!--Navbar Section-->
     <?php include "partials/nav.php"; ?>
     <!--End of Navbar Section-->
@@ -26,7 +25,7 @@ her office and getting directions. Still needs styling and some minor additions.
     <section class="meetKatherine">
         <div class="katherineInfoSection">
             <img 
-            src="/client_site/images/hero_image.png"
+            src="images/hero_image.png"
             alt="Meet Katherine Sullivan Image"
             class="kcAboutImage"
             />
@@ -68,6 +67,6 @@ her office and getting directions. Still needs styling and some minor additions.
     </section>
     
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCcJfQtl7zxKFtpISZ4Uza01Yx_4kX1oN0&libraries=maps,marker&v=weekly" async></script>
-    <script src="/client_site/js/google_maps_api.js" defer></script>
+    <script src="js/google_maps_api.js" defer></script>
   </body>
 </html>

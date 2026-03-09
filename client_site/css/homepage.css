@@ -130,3 +130,35 @@ body {
     text-decoration: none;
 }
 
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+  padding: 40px 0;
+}
+
+.card {
+  background: darkgray;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  margin-bottom: 10px;
+}
+
+.cardText {
+  margin-bottom: 12px;
+}
+
+.cardMeta {
+  font-size: 0.9rem;
+  color: #555;
+}

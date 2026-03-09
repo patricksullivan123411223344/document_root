@@ -1,15 +1,23 @@
+<!--
+Name: Patrick Sullivan
+Filename: nav.php
+Date: March 7, 2026
+Description: This is a reusable php partial. It takes the html render of my navbar and with
+php include, we can display it to each page without needing to hardcode it in.
+-->
+
 <!--NavBar Component-->
    <nav class="navBar" id="navLogic">
         <div class="innerNav">
-            <img>
-            src="/client_site/images/KC_Logo.png"
+            <img
+            src="images/KC_Logo.png"
             alt="Katherine Sullivan LCSW logo"
             class="navLogo"
-            </img>
+            />
         <ul class="navList">
-            <li class="navbar_home"><a href="/client_site/index.php">Home</a></li>
-            <li class="navbar_about"><a href="/client_site/about.php">About</a></li>
-            <li class="navbar_contact_CTA"><a href="/client_site/contact.php">Contact</a></li>
+            <li class="navbar_home"><a href="./index.php">Home</a></li>
+            <li class="navbar_about"><a href="./about.php">About</a></li>
+            <li class="navbar_contact_CTA"><a href="./contact.php">Contact</a></li>
         </ul>
     </div>
 </nav>

@@ -6,14 +6,13 @@ Description: Contact page contains both Email form and
 Calendly session booker. Two buttons at the top with click
 events to scroll down to their respective section.
 -->
-<?php include "partials/nav.php"; ?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <Title>Katherine Sullivan LCSW - Contact Form</Title>
-        <link rel = "stylesheet" href="/client_site/css/contact.css">
+        <link rel = "stylesheet" href="css/contact.css">
     </head>
 <body>
 
@@ -70,6 +69,6 @@ events to scroll down to their respective section.
     </section>
 
     <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
-    <script src="/client_site/js/contact_page_logic.js"></script>
+    <script src="js/contact_page_logic.js"></script>
 </body>
 </html>

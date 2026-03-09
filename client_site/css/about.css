@@ -118,6 +118,10 @@ nav {
     justify-content: center;
     align-items: center;
 }
+
+button {
+    border-radius: 10px;
+}
 @media (max-width: 900px) {
     .katherineInfoSection {
         grid-template-columns: 1fr;
