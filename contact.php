@@ -1,7 +1,7 @@
 <!--
 Name: Patrick Sullivan
-Date: Feb 15, 2026
-File: contact.html
+Date: March 7, 2026
+File: contact.php
 Description: Contact page contains both Email form and 
 Calendly session booker. Two buttons at the top with click
 events to scroll down to their respective section.
