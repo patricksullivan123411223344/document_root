@@ -1,9 +1,7 @@
 -- Name: Patrick Sullivan
 -- Date: April 5, 2026
 -- Description: SQL schema and sample data for the client site database.
-
-CREATE DATABASE client_site_db;
-USE client_site_db;
+USE patricks_client_site_db;
 
 CREATE TABLE visitors (
     visitor_id INT AUTO_INCREMENT PRIMARY KEY,
