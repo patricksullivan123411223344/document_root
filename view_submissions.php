@@ -1,4 +1,9 @@
 <?php
+/*
+Name: Patrick Sullivan
+Date: April 2, 2026
+Description: Admin page that retrieves and displays all contact form submissions from the database in a tabular format.
+*/
 include "includes/db_connect.php";
 
 $stmt = $pdo->query("
@@ -10,7 +15,6 @@ $stmt = $pdo->query("
 
 $submissions = $stmt->fetchAll();
 ?>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -36,9 +40,9 @@ $submissions = $stmt->fetchAll();
             <td><?= htmlspecialchars($row["email"]) ?></td>
             <td><?= htmlspecialchars($row["reason"]) ?></td>
             <td><?= htmlspecialchars($row["message"]) ?></td>
-            <td><?= $row["submitted_at"] ?></td>
+            <td><?= htmlspecialchars($row["submitted_at"]) ?></td>
             <td>
-                <a href="delete_submission.php?id=<?= $row["submission_id"] ?>" 
+                <a href="delete_submissions.php?id=<?= $row["submission_id"] ?>" 
                    onclick="return confirm('Delete this submission?');">
                    Delete
                 </a>
@@ -47,6 +51,5 @@ $submissions = $stmt->fetchAll();
     <?php endforeach; ?>
 
 </table>
-
 </body>
 </html>

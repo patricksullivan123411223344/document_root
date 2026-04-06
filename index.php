@@ -59,6 +59,7 @@ Includes a hero section and a speciality list (card format) as a php object clas
             </div>
         </article>
       <?php endforeach; ?>
-    </section>
-  </body>
+    </div>
+  </section>
+ </body>
 </html>
