@@ -1,7 +1,7 @@
 <?php
-
 session_start();
 include "includes/validation.php";
+include "includes/db_connect.php";
 
 if (isset($_GET["end_session"]) && $_GET["end_session"] === "1") {
     $_SESSION = [];
@@ -51,18 +51,16 @@ $errors = [
 
 $status_message = '';
 
-$allowed_reasons = ["question", "consultation", "booking information"];
+$allowed_reasons = ["question", "consultation", "booking"];
 
 if (isset($_COOKIE["visitor_name"]) && validate_text($_COOKIE["visitor_name"], 1, 50)) {
     $cookie_name_display = htmlspecialchars($_COOKIE["visitor_name"]);
 }
 
-/* Read session safely for display */
 if (isset($_SESSION["last_reason"]) && validate_option($_SESSION["last_reason"], $allowed_reasons)) {
     $session_reason_display = htmlspecialchars($_SESSION["last_reason"]);
 }
 
-/* Form submission handling */
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $values["name"] = trim($_POST["name"] ?? '');
     $values["age"] = trim($_POST["age"] ?? '');
@@ -70,44 +68,88 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $values["reason"] = $_POST["reason"] ?? '';
     $values["message"] = trim($_POST["message"] ?? '');
 
-    /* Validate text input */
     if (!validate_text($values["name"], 2, 50)) {
         $errors["name"] = "Name must be between 2 and 50 characters.";
     }
 
-    /* Validate number input */
     if (!validate_number($values["age"], 1, 120)) {
         $errors["age"] = "Age must be a number between 1 and 120.";
     }
 
-    /* Validate email */
     if (!validate_email_address($values["email"])) {
         $errors["email"] = "Please enter a valid email address.";
     }
 
-    /* Validate selected option */
     if (!validate_option($values["reason"], $allowed_reasons)) {
         $errors["reason"] = "Please choose a valid reason for reaching out.";
     }
 
-    /* Validate message text */
     if (!validate_text($values["message"], 10, 500)) {
         $errors["message"] = "Message must be between 10 and 500 characters.";
     }
 
-    /* Determine whether form is valid using implode() */
     if (implode('', $errors) === '') {
-        $status_message = "Form submitted successfully!";
+        try {
+            $select_visitor = $pdo->prepare("SELECT visitor_id FROM visitors WHERE email = ?");
+            $select_visitor->execute([$values["email"]]);
+            $existing_visitor = $select_visitor->fetch();
 
-        /* Store visitor name in cookie for 7 days */
-        setcookie("visitor_name", $values["name"], time() + (86400 * 7), "/");
+            if ($existing_visitor) {
+                $visitor_id = $existing_visitor["visitor_id"];
 
-        /* Store form-related session data */
-        $_SESSION["last_reason"] = $values["reason"];
-        $_SESSION["last_name"] = $values["name"];
+                $update_visitor = $pdo->prepare("
+                    UPDATE visitors
+                    SET name = ?, age = ?
+                    WHERE visitor_id = ?
+                ");
+                $update_visitor->execute([
+                    $values["name"],
+                    (int)$values["age"],
+                    $visitor_id
+                ]);
+            } else {
+                $insert_visitor = $pdo->prepare("
+                    INSERT INTO visitors (name, age, email)
+                    VALUES (?, ?, ?)
+                ");
+                $insert_visitor->execute([
+                    $values["name"],
+                    (int)$values["age"],
+                    $values["email"]
+                ]);
 
-        $cookie_name_display = htmlspecialchars($values["name"]);
-        $session_reason_display = htmlspecialchars($values["reason"]);
+                $visitor_id = $pdo->lastInsertId();
+            }
+
+            $insert_submission = $pdo->prepare("
+                INSERT INTO contact_submissions (visitor_id, reason, message)
+                VALUES (?, ?, ?)
+            ");
+            $insert_submission->execute([
+                $visitor_id,
+                $values["reason"],
+                $values["message"]
+            ]);
+
+            $status_message = "Form submitted successfully!";
+
+            setcookie("visitor_name", $values["name"], time() + (86400 * 7), "/");
+            $_SESSION["last_reason"] = $values["reason"];
+            $_SESSION["last_name"] = $values["name"];
+
+            $cookie_name_display = htmlspecialchars($values["name"]);
+            $session_reason_display = htmlspecialchars($values["reason"]);
+
+            $values = [
+                "name" => '',
+                "age" => '',
+                "email" => '',
+                "reason" => '',
+                "message" => ''
+            ];
+        } catch (PDOException $e) {
+            $status_message = "A database error occurred. Please try again later.";
+        }
     } else {
         $status_message = "Please correct the errors below and resubmit the form.";
     }
@@ -123,9 +165,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 </head>
 <body>
 
-    <!-- Navbar Section -->
     <?php include "partials/nav.php"; ?>
-    <!-- End of Navbar Section -->
 
     <div class="contactBox">
         <h1 class="contactText">Ready to talk?</h1>
@@ -138,7 +178,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <hr />
 
-    <!-- Cookie and session info display -->
     <section class="contact" aria-labelledby="visitorInfoTitle">
         <h2 id="visitorInfoTitle" class="emailFormHeader">Visitor Info</h2>
 
@@ -182,12 +221,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <form class="contactForm" method="POST" action="">
             <label class="field">
                 <span>Name</span>
-                <input
-                    type="text"
-                    name="name"
-                    value="<?= htmlspecialchars($values["name"]); ?>"
-                    required
-                >
+                <input type="text" name="name" value="<?= htmlspecialchars($values["name"]); ?>" required>
                 <?php if ($errors["name"] !== ''): ?>
                     <p class="fieldError"><?= htmlspecialchars($errors["name"]); ?></p>
                 <?php endif; ?>
@@ -195,14 +229,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             <label class="field">
                 <span>Age</span>
-                <input
-                    type="number"
-                    name="age"
-                    min="1"
-                    max="120"
-                    value="<?= htmlspecialchars($values["age"]); ?>"
-                    required
-                >
+                <input type="number" name="age" min="1" max="120" value="<?= htmlspecialchars($values["age"]); ?>" required>
                 <?php if ($errors["age"] !== ''): ?>
                     <p class="fieldError"><?= htmlspecialchars($errors["age"]); ?></p>
                 <?php endif; ?>
@@ -210,12 +237,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             <label class="field">
                 <span>Email</span>
-                <input
-                    type="email"
-                    name="email"
-                    value="<?= htmlspecialchars($values["email"]); ?>"
-                    required
-                >
+                <input type="email" name="email" value="<?= htmlspecialchars($values["email"]); ?>" required>
                 <?php if ($errors["email"] !== ''): ?>
                     <p class="fieldError"><?= htmlspecialchars($errors["email"]); ?></p>
                 <?php endif; ?>
@@ -236,11 +258,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             <label class="field">
                 <span>Message</span>
-                <textarea
-                    name="message"
-                    rows="5"
-                    required
-                ><?= htmlspecialchars($values["message"]); ?></textarea>
+                <textarea name="message" rows="5" required><?= htmlspecialchars($values["message"]); ?></textarea>
                 <?php if ($errors["message"] !== ''): ?>
                     <p class="fieldError"><?= htmlspecialchars($errors["message"]); ?></p>
                 <?php endif; ?>
@@ -253,3 +271,4 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
     <script src="js/contact_page_logic.js"></script>
 </body>
+</html>
