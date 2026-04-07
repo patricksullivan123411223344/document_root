@@ -3,9 +3,11 @@ session_start();
 include "includes/validation.php";
 include "includes/db_connect.php";
 
+// End session if end_session query param is set
 if (isset($_GET["end_session"]) && $_GET["end_session"] === "1") {
     $_SESSION = [];
 
+    // Clear session cookie if in use
     if (ini_get("session.use_cookies")) {
         $params = session_get_cookie_params();
         setcookie(
@@ -24,6 +26,7 @@ if (isset($_GET["end_session"]) && $_GET["end_session"] === "1") {
     exit;
 }
 
+// Track how many times the user has visited this page per session
 if (!isset($_SESSION["visit_count"])) {
     $_SESSION["visit_count"] = 1;
 } else {
@@ -33,6 +36,7 @@ if (!isset($_SESSION["visit_count"])) {
 $cookie_name_display = '';
 $session_reason_display = '';
 
+// Default empty form values 
 $values = [
     "name" => '',
     "age" => '',
@@ -41,6 +45,7 @@ $values = [
     "message" => ''
 ];
 
+// Default empty error values 
 $errors = [
     "name" => '',
     "age" => '',
@@ -53,14 +58,17 @@ $status_message = '';
 
 $allowed_reasons = ["question", "consultation", "booking"];
 
+// Populate welcome message if visitor name cookie exists and is valid
 if (isset($_COOKIE["visitor_name"]) && validate_text($_COOKIE["visitor_name"], 1, 50)) {
     $cookie_name_display = htmlspecialchars($_COOKIE["visitor_name"]);
 }
 
+// Display last selected reason from session if valid
 if (isset($_SESSION["last_reason"]) && validate_option($_SESSION["last_reason"], $allowed_reasons)) {
     $session_reason_display = htmlspecialchars($_SESSION["last_reason"]);
 }
 
+// Handle form submission 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $values["name"] = trim($_POST["name"] ?? '');
     $values["age"] = trim($_POST["age"] ?? '');
@@ -68,6 +76,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $values["reason"] = $_POST["reason"] ?? '';
     $values["message"] = trim($_POST["message"] ?? '');
 
+    // Validate each field before submission completes, taking functions from validation.php 
     if (!validate_text($values["name"], 2, 50)) {
         $errors["name"] = "Name must be between 2 and 50 characters.";
     }
@@ -88,13 +97,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $errors["message"] = "Message must be between 10 and 500 characters.";
     }
 
+    // Only write to DB if no validation errors occur
     if (implode('', $errors) === '') {
         try {
+            // Check if visitor already exists via email
             $select_visitor = $pdo->prepare("SELECT visitor_id FROM visitors WHERE email = ?");
             $select_visitor->execute([$values["email"]]);
             $existing_visitor = $select_visitor->fetch();
 
             if ($existing_visitor) {
+                //Update existing visitor's name and age
                 $visitor_id = $existing_visitor["visitor_id"];
 
                 $update_visitor = $pdo->prepare("
@@ -108,6 +120,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $visitor_id
                 ]);
             } else {
+                // Insert new visitor record 
                 $insert_visitor = $pdo->prepare("
                     INSERT INTO visitors (name, age, email)
                     VALUES (?, ?, ?)
@@ -121,6 +134,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $visitor_id = $pdo->lastInsertId();
             }
 
+            // Insert the contact form submission into the DB
             $insert_submission = $pdo->prepare("
                 INSERT INTO contact_submissions (visitor_id, reason, message)
                 VALUES (?, ?, ?)
@@ -133,13 +147,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             $status_message = "Form submitted successfully!";
 
+            // Store visitor name in cookie and reason in session
             setcookie("visitor_name", $values["name"], time() + (86400 * 7), "/");
             $_SESSION["last_reason"] = $values["reason"];
             $_SESSION["last_name"] = $values["name"];
 
             $cookie_name_display = htmlspecialchars($values["name"]);
             $session_reason_display = htmlspecialchars($values["reason"]);
-
+            
+            // Reset form values after a successful submission 
             $values = [
                 "name" => '',
                 "age" => '',

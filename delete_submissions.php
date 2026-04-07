@@ -4,12 +4,16 @@ Name: Patrick Sullivan
 Date: April 2, 2026
 Description: Admin page that deletes a contact submission from the database by submission ID and redirect back to the suibmissions in view.
 */
+
+// Connect to the DB bridge 
 include "includes/db_connect.php";
 
+// Validate that an ID was passed via a query string
 if (isset($_GET["id"]) && is_numeric($_GET["id"])) {
     $id = (int)$_GET["id"];
 
     try {
+        // Delete the submission matching the given ID
         $stmt = $pdo->prepare("DELETE FROM contact_submissions WHERE submission_id = ?");
         $stmt->execute([$id]);
     } catch (PDOException $e) {
@@ -17,5 +21,6 @@ if (isset($_GET["id"]) && is_numeric($_GET["id"])) {
     }
 }
 
+// Redirect back to the submissions list 
 header("Location: view_submissions.php");
 exit;

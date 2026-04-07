@@ -4,8 +4,11 @@ Name: Patrick Sullivan
 Date: April 2, 2026
 Description: Admin page that retrieves and displays all contact form submissions from the database in a tabular format.
 */
+
+// Connect to the db brige 
 include "includes/db_connect.php";
 
+// Fetch all submissions joined with visitor info, newest coming first
 $stmt = $pdo->query("
     SELECT cs.submission_id, v.name, v.email, cs.reason, cs.message, cs.submitted_at
     FROM contact_submissions cs
@@ -42,6 +45,7 @@ $submissions = $stmt->fetchAll();
             <td><?= htmlspecialchars($row["message"]) ?></td>
             <td><?= htmlspecialchars($row["submitted_at"]) ?></td>
             <td>
+                <!-- Delete links with confirmation prompt -->
                 <a href="delete_submissions.php?id=<?= $row["submission_id"] ?>" 
                    onclick="return confirm('Delete this submission?');">
                    Delete
